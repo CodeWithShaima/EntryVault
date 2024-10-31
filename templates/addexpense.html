@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col col-8 offset-2">
+                <h3 class="alert alert-success text-center">Create New Expense</h3>
+               
+                {% if messages %}
+                <div class="alert alert-success text-center" id="notification">{{ messages|join:"<br>"|safe }}</div>
+            {% endif %}
+
+
+                <form method="POST" action="{% url 'addexpense' %}">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                </form>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col col-8 offset-2">
+                <ul class="list-group">
+                    {% for expense in expenses %}
+                    <li class="list-group-item">
+                            <strong>{{ expense.expensename }}</strong> - ${{ expense.amount }}  
+                            | Location: {{ expense.location }} | Date: {{ expense.date }} 
+                            | User: {{ expense.user.name }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
