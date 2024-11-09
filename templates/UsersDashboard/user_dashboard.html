@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>User Dashboard</title>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="alert alert-success text-center">Welcome to EntryVault, {{ user.username }}!</h1>
+        {% if user.is_authenticated %}
+            <nav class="nav justify-content-center mb-4">
+                <a class="nav-link" href="{% url 'user_profile' %}">My Profile</a>
+                <a class="nav-link" href="{% url 'view_expenses' %}">My Expenses</a>
+                <a class="nav-link" href="{% url 'user_report' %}">Expense Reports</a> 
+            </nav>
+        {% endif %}
+        <div class="mt-3 text-center">
+            <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+</body>
+</html>

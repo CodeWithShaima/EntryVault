@@ -38,20 +38,44 @@ def SignupPage(request):
     return render(request, 'signup.html')
 
 #login page controller
-def LoginPage(request):
-    if request.method=='POST':
-     username=request.POST.get('username')  
-     pass1=request.POST.get('pass')  
-     user=authenticate(request,username=username,password=pass1)
-     if user is not None:
-         login(request,user)
-         return redirect('home')
-     else:
+# def LoginPage(request):
+#     if request.method=='POST':
+#      username=request.POST.get('username')  
+#      pass1=request.POST.get('pass')  
+#      user=authenticate(request,username=username,password=pass1)
+#      if user is not None:
+#          login(request,user)
+#          return redirect('home')
+#      else:
           
-          render(request,'login.html',{'messg': 'Password is incorrect'})
+#           render(request,'login.html',{'messg': 'Password is incorrect'})
         
      
-    return render (request,'login.html')
+#     return render (request,'login.html')
+
+def LoginPage(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')  
+        password = request.POST.get('pass')  # Changed variable name to 'password' for clarity
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            messages.success(request, 'Login successful!')  # Optional success message
+            
+            # Check if the user is a superuser
+            if user.is_superuser:
+                return redirect('home')  # Redirect to the home page for superusers
+            else:
+                return redirect('user_dashboard')  # Redirect to user dashboard for regular users
+        else:
+            messages.error(request, 'Invalid username or password.')  # Use messages to show error
+        
+    return render(request, 'login.html')  # Render the login page on GET or failed login
+
+
+
+
 
 
 #users page

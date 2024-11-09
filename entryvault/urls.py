@@ -36,7 +36,8 @@ urlpatterns = [
     path('edit/<int:id>/', views.edit_user, name='edituser'),
 
     #User Dashboard
-    path('user/dashboard/', views.UserDashboard, name='userdashboard'),
-    path('user/view-expenses/', views.ViewExpenses, name='usersexpenses'),
-    path('user/userexpense-report/', views.UserExpenseReport, name='usersexpensereport'),
+    path('user/dashboard/', views.UserDashboard, name='user_dashboard'),
+    path('user/view-expenses/', views.ViewExpenses, name='user_expenses'),
+    path('user/view-profile/', views.ViewProfile, name='user_profile'),
+    path('user/userexpense-report/', views.UserExpenseReport, name='user_expensereport'),
 ]   
