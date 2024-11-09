@@ -34,4 +34,9 @@ urlpatterns = [
     path('users/', views.Users, name='users'),
     path('delete/<int:id>', views.Delete_record, name='delete'),
     path('edit/<int:id>/', views.edit_user, name='edituser'),
+
+    #User Dashboard
+    path('user/dashboard/', views.UserDashboard, name='userdashboard'),
+    path('user/view-expenses/', views.ViewExpenses, name='usersexpenses'),
+    path('user/userexpense-report/', views.UserExpenseReport, name='usersexpensereport'),
 ]   
