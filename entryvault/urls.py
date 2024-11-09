@@ -29,6 +29,7 @@ urlpatterns = [
 
     path('expense/', views.Expense, name='expense'),  # Maps 'expense/' to expense view
     path('add-expense/', views.AddExpense, name='addexpense'),
+    path('expense-report/', views.ExpenseReport, name='expensereport'),
 
     path('users/', views.Users, name='users'),
     path('delete/<int:id>', views.Delete_record, name='delete'),

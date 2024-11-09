@@ -1,11 +1,7 @@
 from django.contrib import admin
-from .models import CreateUsers, NewExpense
+from django.contrib.auth.models import User
+from .models import NewExpense
 
-# Register your models here.
-class UsersAdmin(admin.ModelAdmin):
-    list_display=['name','email','password','role']
-
-admin.site.register(CreateUsers,UsersAdmin)
 
 #registering my NewExpense here
 class ExpenseAdmin(admin.ModelAdmin):

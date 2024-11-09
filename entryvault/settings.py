@@ -76,10 +76,15 @@ WSGI_APPLICATION = 'entryvault.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',          # Specify MySQL as the database engine
+        'NAME': 'entryvault_db',                       # Replace with the name of your MySQL database
+        'USER': 'shaima',                       # Replace with your MySQL username
+        'PASSWORD': 'shaima',                   # Replace with your MySQL password
+        'HOST': 'localhost',                           # Use 'localhost' if running MySQL on the same machine
+        'PORT': '3306',                                # MySQL’s default port
     }
 }
+
 
 
 # Password validation

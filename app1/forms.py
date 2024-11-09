@@ -1,21 +1,21 @@
-from django.forms import ModelForm
-from .models import CreateUsers,NewExpense
 from django import forms
-from django.forms import Widget
+from django.contrib.auth.models import User
+from .models import NewExpense 
 
 
-class usersform(ModelForm):
+class UsersForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
     class Meta:
-        model=CreateUsers
-        fields='__all__'
+        model = User
+        fields = ['username', 'email','password']  # Adjust as necessary
 
-        widgets={
-            'name':forms.TextInput(attrs={'class':'form-control'}),
-            'email':forms.TextInput(attrs={'class':'form-control'}),
-            'role':forms.TextInput(attrs={'class':'form-control'}),
-            'password':forms.PasswordInput(attrs={'class':'form-control'},render_value=True)
-            
-        }
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password'])  # Hash the password
+        if commit:
+            user.save()
+        return user
 
 
 class NewExpenseForm(forms.ModelForm):

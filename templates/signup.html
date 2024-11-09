@@ -4,96 +4,142 @@
     <title>Signup Page</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
     <style>
-        *, *:before, *:after {
-            padding: 0;
-            margin: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background-color: #080710;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            font-family: 'Poppins', sans-serif;
-        }
-        .background {
-            position: absolute;
-            width: 430px;
-            height: 520px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        .background .shape {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-        }
-        .shape:first-child {
-            background: linear-gradient(#1845ad, #23a2f6);
-            top: -80px;
-            left: -80px;
-        }
-        .shape:last-child {
-            background: linear-gradient(to right, #ff512f, #f09819);
-            bottom: -80px;
-            right: -30px;
-        }
-        form {
-            background-color: rgba(255, 255, 255, 0.13);
-            border-radius: 10px;
-            padding: 50px 35px;
-            width: 450px;
-            position: relative;
-            z-index: 1;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 40px rgba(8, 7, 16, 0.6);
-        }
-        form h3 {
-            font-size: 32px;
-            color: #fff;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        label {
-            color: #e5e5e5;
-            font-size: 16px;
-            margin-top: 15px;
-            display: block;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border: none;
-            border-radius: 5px;
-            background-color: rgba(255, 255, 255, 0.07);
-            color: #e5e5e5;
-        }
-        button {
-            width: 100%;
-            padding: 15px;
-            margin-top: 20px;
-            font-size: 18px;
-            color: #080710;
-            background-color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        a {
-            color: #e5e5e5;
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            text-decoration: none;
-        }
-        a:hover {
-            color: #23a2f6;
-        }
+    *, *:before, *:after {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e0e7ff 100%); /* Soft gradient background */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .background {
+        position: absolute;
+        width: 430px;
+        height: 520px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .background .shape {
+        position: absolute;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+    }
+
+    .shape:first-child {
+        background: linear-gradient(#1845ad, #23a2f6); /* Gradient for the first shape */
+        top: -80px;
+        left: -80px;
+    }
+
+    .shape:last-child {
+        background: linear-gradient(to right, #ff512f, #f09819); /* Gradient for the second shape */
+        bottom: -80px;
+        right: -30px;
+    }
+
+    form {
+        background-color: #ffffff; /* White background for the form */
+        border-radius: 15px; /* More rounded corners */
+        padding: 50px 35px;
+        width: 450px; /* Keep the same width */
+        position: relative;
+        z-index: 1;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Softer shadow for depth */
+    }
+
+    form h3 {
+        font-size: 32px;
+        color: #4a4a4a; /* Dark gray title color */
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    label {
+        color: #4a4a4a; /* Darker color for labels */
+        font-size: 16px;
+        margin-top: 15px;
+        display: block;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: none;
+        border-radius: 5px;
+        background-color: rgba(240, 240, 240, 0.9); /* Light gray input background */
+        color: #333; /* Dark text for inputs */
+    }
+
+    input:focus {
+        background-color: #ffffff; /* White background on focus */
+        border-color: #007bff; /* Blue border on focus */
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Shadow effect on focus */
+    }
+
+    ::placeholder {
+        color: #999; /* Medium gray for placeholder text */
+    }
+
+    button {
+        width: 100%;
+        padding: 15px;
+        margin-top: 20px;
+        font-size: 18px;
+        color: #ffffff; /* White text on button */
+        background: linear-gradient(90deg, #ff6a00, #ee0979); /* Gradient button background */
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        position: relative; /* Position for pseudo-element */
+        overflow: hidden; /* Prevent overflow */
+    }
+
+    button::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 300%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.1); /* Light overlay */
+        transform: translateX(-50%) translateY(-100%);
+        transition: all 0.3s; /* Smooth transition */
+        z-index: 0; /* Behind the button text */
+    }
+
+    button:hover::after {
+        transform: translateX(-50%) translateY(0); /* Slide effect on hover */
+    }
+
+    button:hover {
+        transform: translateY(-2px); /* Lift effect on hover */
+    }
+
+    button span {
+        position: relative; /* Position for text */
+        z-index: 1; /* Above the overlay */
+    }
+
+    a {
+        color: #4a4a4a; /* Darker color for links */
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        text-decoration: none;
+    }
     </style>
 </head>
 <body>
@@ -123,3 +169,5 @@
     </form>
 </body>
 </html>
+
+

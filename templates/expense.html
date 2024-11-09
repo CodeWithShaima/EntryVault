@@ -17,7 +17,6 @@
                     <th scope="col">Location</th>
                     <th scope="col">Date</th>
                     <th scope="col">User</th>
-                    <th scope="col">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -28,7 +27,7 @@
                     <td>${{ i.amount }}</td>
                     <td>{{ i.location }}</td>
                     <td>{{ i.date }}</td>
-                    <td>{{ i.user.name }}</td>
+                    <td>{{ i.user.username }}</td>
                     
                 </tr>
                 {% endfor %}
