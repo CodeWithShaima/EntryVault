@@ -1,0 +1,15 @@
+
+<!DOCTYPE html>
+<head>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>User Profile</h1>
+        <ul class="list-group">
+            <li class="list-group-item"><strong>Username:</strong> {{ user.username }}</li>
+            <li class="list-group-item"><strong>Email:</strong> {{ user.email }}</li>
+        <a href="{% url 'user_profile' %}" class="btn btn-primary mt-3">Edit Profile</a>
+    </div>
+</body>
+</html>

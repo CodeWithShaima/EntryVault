@@ -38,6 +38,7 @@ urlpatterns = [
     #User Dashboard
     path('user/dashboard/', views.UserDashboard, name='user_dashboard'),
     path('user/view-expenses/', views.ViewExpenses, name='user_expenses'),
+    path('user/add-expenses/', views.user_addexpense, name='user_addexpenses'),
     path('user/view-profile/', views.ViewProfile, name='user_profile'),
     path('user/userexpense-report/', views.UserExpenseReport, name='user_expensereport'),
 ]   
