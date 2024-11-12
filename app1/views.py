@@ -6,9 +6,8 @@ from django.contrib.auth.decorators import login_required
 from .forms import UsersForm, NewExpenseForm
 from django.contrib.auth.decorators import user_passes_test
 from .models import NewExpense
-#from django.http import JsonResponse
-
-from django.db.models import Sum
+from django.http import JsonResponse
+from django.db.models import Sum,Avg
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 
@@ -111,14 +110,118 @@ def delete_expense(request, expense_id):
     return redirect('user_expenses')
 
 
+#################################################################################
 
-
+@login_required
 def UserExpenseReport(request):
-    return render(request, 'UsersDashboard/userexpense_report.html')
+    user = request.user
+    expense_name = request.GET.get('expense_name', '')
+    location = request.GET.get('location', '')
+    amount = request.GET.get('amount', '')  # Single amount field
+    from_date = request.GET.get('from_date', '')
+    to_date = request.GET.get('to_date', '')
+
+    # Start filtering by user
+    expenses = NewExpense.objects.filter(user=user)
+
+    # Apply filters based on user input
+    if expense_name:
+        expenses = expenses.filter(expensename__icontains=expense_name)
+    if location:
+        expenses = expenses.filter(location__icontains=location)
+    if amount:
+        expenses = expenses.filter(amount__exact=amount)  # Filter by exact amount
+    if from_date:
+        expenses = expenses.filter(date__gte=from_date)
+    if to_date:
+        expenses = expenses.filter(date__lte=to_date)
+
+    total_expenses = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+
+    # Current month expenses
+    current_month = timezone.now().month
+    current_year = timezone.now().year
+    current_month_expenses = expenses.filter(date__month=current_month, date__year=current_year)
+    total_current_month_expenses = current_month_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+
+    # Return JSON for AJAX or render for page load
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        expenses_data = list(expenses.values('expensename', 'location', 'amount', 'date'))
+        return JsonResponse({
+            'expenses': expenses_data,
+            'total_expenses': total_expenses,
+            'total_current_month_expenses': total_current_month_expenses,
+        })
+
+    return render(request, 'UsersDashboard/user_expensereport.html', {
+        'expenses': expenses,
+        'total_expenses': total_expenses,
+        'total_current_month_expenses': total_current_month_expenses,
+        'expense_name': expense_name,
+        'location': location,
+        'amount': amount,
+        'from_date': from_date,
+        'to_date': to_date,
+    })
+
+
+
+
+# def UserExpenseAnalysis(request):
+#     return render(request, 'UsersDashboard/user_expenseanalysis.html')
+
+
+def UserExpenseAnalysis(request):
+    if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        analysis_type = request.GET.get('analysis_type')
+
+        # Calculate expenses based on analysis type
+        if analysis_type == 'monthly':
+            # Group expenses by month
+            expenses = Expense.objects.raw('SELECT SUM(amount) as total, EXTRACT(MONTH FROM date) as month FROM yourapp_expense GROUP BY month')
+            labels = [f'Month {i+1}' for i in range(12)]
+            data = [0] * 12  # Initialize data array for 12 months
+
+            # Populate the data array with monthly expenses
+            for expense in expenses:
+                data[expense.month - 1] = expense.total  # Assign total for the month
+
+            return JsonResponse({'labels': labels, 'data': data})
+
+        elif analysis_type == 'yearly':
+            # Group expenses by year
+            expenses = Expense.objects.raw('SELECT SUM(amount) as total, EXTRACT(YEAR FROM date) as year FROM yourapp_expense GROUP BY year')
+            labels = []
+            data = []
+            
+            for expense in expenses:
+                labels.append(str(expense.year))
+                data.append(expense.total)
+
+            return JsonResponse({'labels': labels, 'data': data})
+
+        elif analysis_type == 'quarterly':
+            # Group expenses by quarter
+            expenses = Expense.objects.raw('SELECT SUM(amount) as total, EXTRACT(QUARTER FROM date) as quarter FROM yourapp_expense GROUP BY quarter')
+            labels = ['Q1', 'Q2', 'Q3', 'Q4']
+            data = [0] * 4  # Initialize data array for 4 quarters
+
+            # Populate the data array with quarterly expenses
+            for expense in expenses:
+                data[expense.quarter - 1] = expense.total
+
+            return JsonResponse({'labels': labels, 'data': data})
+
+    return render(request, 'UsersDashboard/user_expenseanalysis.html')
+
+
+
 
 def ViewProfile(request):
     user = request.user
     return render(request, 'UsersDashboard/user_profile.html', {'user': user})
+
+
 
 ###############################################################################################################################################
 

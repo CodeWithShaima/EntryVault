@@ -45,5 +45,6 @@ urlpatterns = [
     path('user/add-expenses/', views.user_addexpense, name='user_addexpenses'),
     path('user/view-profile/', views.ViewProfile, name='user_profile'),
     path('user/userexpense-report/', views.UserExpenseReport, name='user_expensereport'),
+    path('user/userexpense-anaysis/', views.UserExpenseAnalysis, name='user_expenseanalysis'),
     path('expenses/report', views.ExpenseReport, name='expense_report'),
 ]

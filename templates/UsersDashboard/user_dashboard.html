@@ -17,13 +17,13 @@
         {% endif %}
 
         <script>
-            // Hide the success message after 3 seconds (3000 milliseconds)
+           
             setTimeout(function() {
                 const successMessage = document.getElementById('successMessage');
                 if (successMessage) {
                     successMessage.style.display = 'none';
                 }
-            }, 600);  // Change the 3000 value to control how long the message is shown (in milliseconds)
+            }, 800);
         </script>
 
         {% if user.is_authenticated %}

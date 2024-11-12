@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Expense Analysis</title>
+    <style>
+        /* Your existing styles */
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
+        h1 { text-align: center; }
+        .search-bar { margin-bottom: 20px; text-align: center; }
+        input[type="text"], select, button { padding: 10px; margin: 5px; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .back-link { display: block; margin: 20px 0; text-align: center; font-size: 18px; color: #007bff; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <h1>User Expense Analysis</h1>
+
+    <div class="search-bar">
+        <select id="analysisType">
+            <option value="">Select Analysis Type</option>
+            <option value="monthly">Monthly Expense Analysis</option>
+            <option value="yearly">Yearly Expense Analysis</option>
+            <option value="quarterly">Quarterly Expense Analysis</option>
+        </select>
+        <button type="button" onclick="fetchData()">Analyze</button>
+    </div>
+
+    <canvas id="expenseChart" width="400" height="200"></canvas>
+    <a href="{% url 'user_expensereport' %}" class="back-link">Back to Expense Report</a>
+
+    <!-- Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        let expenseChart;
+
+        function fetchData() {
+            const analysisType = document.getElementById('analysisType').value;
+
+            if (analysisType) {
+                fetch(`/user/userexpense-anaysis/?analysis_type=${analysisType}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.json())
+                .then(data => renderChart(data.labels, data.data))
+                .catch(error => console.error('Error fetching data:', error));
+            } else {
+                alert('Please select an analysis type');
+            }
+        }
+
+        function renderChart(labels, data) {
+            const ctx = document.getElementById('expenseChart').getContext('2d');
+            
+            // If a chart already exists, destroy it before creating a new one
+            if (expenseChart) {
+                expenseChart.destroy();
+            }
+
+            expenseChart = new Chart(ctx, {
+                type: 'bar', // or 'line', 'pie', etc.
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Expense Amount',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

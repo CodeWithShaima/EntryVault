@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Expense Report</title>
+    
+    
+    <style>
+        /* General Body Styling */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f3f4f6, #e0e7ff);
+            margin: 0;
+        }
+
+        /* Background Circles */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .background .shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .background .shape.shape1 {
+            background: linear-gradient(135deg, #0a51f6, #70bff5);
+            width: 350px;
+            height: 350px;
+            top: 10%;
+            left: 5%;
+        }
+
+        .background .shape.shape2 {
+            background: linear-gradient(135deg, #f33711, #fc990e);
+            width: 300px;
+            height: 300px;
+            bottom: 15%;
+            right: 5%;
+        }
+
+        /* Main Container for Organized Layout */
+        .container {
+   
+            width: 95%;
+            max-width: 1000px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.7); /* Transparent Background */
+            border-radius: 15px;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            
+        }
+
+         /* Corner Circles */
+         .container .shape:first-child {
+            background: linear-gradient(#1845ad, #23a2f6); /* Gradient for the first shape */
+            width: 150px;
+            height: 150px;
+            top: -80px;
+            left: -80px;
+            position: absolute;
+        }
+
+        .container .shape:last-child {
+            background: linear-gradient(to right, #ff512f, #f09819); /* Gradient for the second shape */
+            width: 150px;
+            height: 150px;
+            bottom: -80px;
+            right: -30px;
+            position: absolute;
+        }
+
+        /* Header Styling */
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #333;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .search-bar input, .search-bar button {
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+        }
+
+        .search-bar input {
+            background-color: #f3f3f3;
+        }
+
+        .search-bar button {
+            background: linear-gradient(90deg, #ff6a00, #ee0979);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Table Styling */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        tr:hover {
+            background-color: #f0f8ff;
+        }
+
+        /* Totals Section */
+        .totals {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            color: #333;
+        }
+
+        /* Expense Analysis Link */
+        .expense-analysis-link {
+            display: inline-block;
+            font-size: 1.1rem;
+            color: #ff6a00;
+            font-weight: bold;
+            margin-top: 15px;
+            text-decoration: none;
+            align-self: flex-end;
+            transition: color 0.3s;
+        }
+
+        .expense-analysis-link:hover {
+            color: #f09819;
+        }
+    </style>
+
+    
+
+
+
+
+
+    <!-- Background Shapes -->
+    <div class="background">
+        <div class="shape shape1"></div>
+        <div class="shape shape2"></div>
+    </div>
+    
+
+<script>
+    function fetchExpenses() {
+        const params = new URLSearchParams();
+        const fields = ['expense_name', 'location', 'min_amount', 'max_amount', 'from_date', 'to_date'];
+
+        // Add each input's value to the params if it exists
+        fields.forEach(field => {
+            const value = document.getElementById(field).value;
+            if (value) params.append(field, value);
+        });
+
+        // Fetch data asynchronously
+        fetch(`{% url 'user_expensereport' %}?` + params.toString())
+            .then(response => response.json())
+            .then(data => {
+                const expenseTable = document.getElementById('expense-table');
+                const expenseSummary = document.getElementById('expense-summary');
+
+                // Populate expense table
+                expenseTable.innerHTML = '';
+                if (data.expenses.length > 0) {
+                    data.expenses.forEach(expense => {
+                        const row = `<tr>
+                            <td>${expense.expensename}</td>
+                            <td>${expense.location}</td>
+                            <td>${expense.amount}</td>
+                            <td>${expense.date}</td>
+                        </tr>`;
+                        expenseTable.innerHTML += row;
+                    });
+                } else {
+                    expenseTable.innerHTML = `<tr><td colspan="4">No expenses found matching your criteria.</td></tr>`;
+                }
+
+                // Update total expenses and current month expenses
+                expenseSummary.innerHTML = `
+                    <div><strong>Total Expense:</strong> $${data.total_expenses}</div>
+                    <div><strong>Total Expense This Month:</strong> $${data.total_current_month_expenses}</div>
+                `;
+            });
+    }
+
+    // Trigger fetchExpenses when any input field changes
+    window.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.search-bar input').forEach(input => {
+            input.addEventListener('input', fetchExpenses);
+        });
+    });
+</script>
+</head>
+<body>
+
+<div class="container">
+    <h1>User Expense Report</h1>
+
+    <!-- Search Form -->
+    <form method="get" action="{% url 'user_expensereport' %}">
+        <div class="search-bar">
+            <input type="text" name="expense_name" placeholder="Expense Name" value="{{ expense_name }}">
+            <input type="text" name="location" placeholder="Location" value="{{ location }}">
+            <input type="number" name="amount" placeholder="Amount" value="{{ amount }}">
+            <input type="date" name="from_date" placeholder="From Date" value="{{ from_date }}">
+            <input type="date" name="to_date" placeholder="To Date" value="{{ to_date }}">
+            <button type="submit">Search</button>
+        </div>
+    </form>
+
+    <!-- Expense List Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Expense Name</th>
+                <th>Location</th>
+                <th>Amount</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.expensename }}</td>
+                <td>{{ expense.location }}</td>
+                <td>{{ expense.amount }}</td>
+                <td>{{ expense.date }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No expenses found matching your criteria.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Summary Section -->
+    <div class="summary">
+        <div><strong>Total Expense:</strong> ${{ total_expenses }}</div>
+        <div><strong>Total Expense This Month:</strong> ${{ total_current_month_expenses }}</div>
+    </div>
+
+    <!-- Expense Analysis Link -->
+    
+    <a href="{% url 'user_expenseanalysis' %}" class="expense-analysis-link">Expense Analysis</a>
+</div>
+
+</body>
+</html>
