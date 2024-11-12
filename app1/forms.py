@@ -21,11 +21,10 @@ class UsersForm(forms.ModelForm):
 class NewExpenseForm(forms.ModelForm):
     class Meta:
         model = NewExpense
-        fields = ['expensename', 'amount', 'location', 'date', 'user']
+        fields = ['expensename', 'amount', 'location', 'date',]
         widgets = {
             'expensename': forms.TextInput(attrs={'class': 'form-control'}),
             'amount': forms.NumberInput(attrs={'class': 'form-control'}),
             'location': forms.TextInput(attrs={'class': 'form-control'}),
             'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'user': forms.Select(attrs={'class': 'form-control'}),
         }

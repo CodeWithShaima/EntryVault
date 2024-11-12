@@ -89,6 +89,7 @@ def user_addexpense(request):
         form = NewExpenseForm()  # Initialize the form for GET request
     return render(request, 'UsersDashboard/user_addexpenses.html', {'form': form})
 
+
 @login_required
 def edit_expense(request, expense_id):
     expense = get_object_or_404(NewExpense, expenseid=expense_id)
@@ -99,20 +100,15 @@ def edit_expense(request, expense_id):
             return redirect('user_expenses')  # Redirect to the correct URL for the expense list page
     else:
         form = NewExpenseForm(instance=expense)
-    return render(request, 'user_editexpenses.html', {'form': form})
+    return render(request, 'UsersDashboard/user_editexpense.html', {'form': form})
 
 
 
 @login_required
 def delete_expense(request, expense_id):
     expense = get_object_or_404(NewExpense, expenseid=expense_id)
-    
-    if request.method == 'POST':  # Confirming the delete action
-        expense.delete()
-        return redirect('user_expense')  # Redirect to the list of expenses
-
-    return render(request, 'confirm_delete.html', {'expense': expense})
-
+    expense.delete()
+    return redirect('user_expenses')
 
 
 

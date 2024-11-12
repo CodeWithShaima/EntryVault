@@ -8,10 +8,20 @@
         <div class="row">
             <div class="col col-8 offset-2">
                 {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-success text-center">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
+                {% for message in messages %}
+                    <div class="alert alert-success text-center" id="successMessage">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+    
+            <script>
+                // Hide the success message after 3 seconds (3000 milliseconds)
+                setTimeout(function() {
+                    const successMessage = document.getElementById('successMessage');
+                    if (successMessage) {
+                        successMessage.style.display = 'none';
+                    }
+                }, 800);  // Change the 3000 value to control how long the message is shown (in milliseconds)
+            </script>
 
                 <h3 class="alert alert-success text-center">Create New Expense</h3>
 

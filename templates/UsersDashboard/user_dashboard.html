@@ -9,6 +9,23 @@
 <body>
     <div class="container mt-5">
         <h1 class="alert alert-success text-center">Welcome to EntryVault, {{ user.username }}!</h1>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success text-center" id="successMessage">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <script>
+            // Hide the success message after 3 seconds (3000 milliseconds)
+            setTimeout(function() {
+                const successMessage = document.getElementById('successMessage');
+                if (successMessage) {
+                    successMessage.style.display = 'none';
+                }
+            }, 600);  // Change the 3000 value to control how long the message is shown (in milliseconds)
+        </script>
+
         {% if user.is_authenticated %}
             <nav class="nav justify-content-center mb-4">
                 <a class="nav-link" href="{% url 'user_profile' %}">My Profile</a>
