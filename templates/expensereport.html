@@ -1,4 +1,46 @@
-<!-- expense_summary.html -->
+<!-- <!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Summary</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Expense Summary</h1>
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Expenses</h5>
+                        <p class="card-text">{{ total_expenses }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Number of Employees</h5>
+                        <p class="card-text">{{ num_employees }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Expenses per Employee</h5>
+                        <p class="card-text">{{ expense_per_employee }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>  -->
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,10 +73,65 @@
                 <div class="card text-center">
                     <div class="card-body">
                         <h5 class="card-title">Expenses per Employee</h5>
-                        <p class="card-text">{{ expenses_per_employee }}</p>
+                        <p class="card-text">{{ expense_per_employee }}</p>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Current Month Expense Details -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Expenses This Month</h5>
+                        <a href="{% url 'monthlyexpensereport' %}?month={{ current_month }}&year={{ current_year }}" class="card-link">
+                        {{ total_current_month_expenses }}
+                    </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Average Expense per Employee (This Month)</h5>
+                        <p class="card-text">{{ average_current_month_expense }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Expense Table -->
+        <div class="mt-5">
+            <h2>Expense Details</h2>
+            <table class="table table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Expense ID</th>
+                        <th>Expense Name</th>
+                        <th>Amount</th>
+                        <th>Location</th>
+                        <th>Date</th>
+                        <th>User</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.expenseid }}</td>
+                        <td>{{ expense.expensename }}</td>
+                        <td>{{ expense.amount }}</td>
+                        <td>{{ expense.location }}</td>
+                        <td>{{ expense.date }}</td>
+                        <td>{{ expense.user.username }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No expenses recorded.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </body>

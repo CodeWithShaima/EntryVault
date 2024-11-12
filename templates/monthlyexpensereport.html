@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Expense Report</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Expense Report for {{ month }}/{{ year }}</h1>
+
+        <h2>Total Expenses: {{ total_monthly_expenses }}</h2>
+
+        <table class="table table-bordered mt-3">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Expense ID</th>
+                    <th>Expense Name</th>
+                    <th>Amount</th>
+                    <th>Location</th>
+                    <th>Date</th>
+                    <th>User</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in monthly_expenses %}
+                <tr>
+                    <td>{{ expense.expenseid }}</td>
+                    <td>{{ expense.expensename }}</td>
+                    <td>{{ expense.amount }}</td>
+                    <td>{{ expense.location }}</td>
+                    <td>{{ expense.date }}</td>
+                    <td>{{ expense.user.username }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No expenses recorded for this month.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -30,6 +30,7 @@ urlpatterns = [
     path('expense/', views.Expense, name='expense'),  # Maps 'expense/' to expense view
     path('add-expense/', views.AddExpense, name='addexpense'),
     path('expense-report/', views.ExpenseReport, name='expensereport'),
+     path('monthly-expense-report/', views.MonthlyExpenseReport, name='monthlyexpensereport'),
 
     path('users/', views.Users, name='users'),
     path('delete/<int:id>', views.Delete_record, name='delete'),
@@ -38,7 +39,11 @@ urlpatterns = [
     #User Dashboard
     path('user/dashboard/', views.UserDashboard, name='user_dashboard'),
     path('user/view-expenses/', views.ViewExpenses, name='user_expenses'),
+    path('user/edit-expense/<int:expense_id>/', views.edit_expense, name='edit_expense'),
+    path('user/delete-expense/<int:expense_id>/', views.delete_expense, name='delete_expense'),
+
     path('user/add-expenses/', views.user_addexpense, name='user_addexpenses'),
     path('user/view-profile/', views.ViewProfile, name='user_profile'),
     path('user/userexpense-report/', views.UserExpenseReport, name='user_expensereport'),
-]   
+    path('expenses/report', views.ExpenseReport, name='expense_report'),
+]

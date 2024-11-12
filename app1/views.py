@@ -6,7 +6,12 @@ from django.contrib.auth.decorators import login_required
 from .forms import UsersForm, NewExpenseForm
 from django.contrib.auth.decorators import user_passes_test
 from .models import NewExpense
+#from django.http import JsonResponse
+
 from django.db.models import Sum
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+
 
 @login_required(login_url='login')
 def HomePage(request):
@@ -53,24 +58,23 @@ def LoginPage(request):
     return render(request, 'login.html')  
 
 
+##########################################################################################################################
 
 
 def UserDashboard(request):
     return render(request, 'UsersDashboard/user_dashboard.html')
 
 
+
+#this shows the expense list in users portal
 @login_required
 def ViewExpenses(request):
-    # Render the view_expenses.html template
     expenses = NewExpense.objects.filter(user=request.user)
-   
     return render(request, 'UsersDashboard/user_expenses.html', {'expenses': expenses})
 
 
 
-
-#for user_dashboard adding expense function
-
+#through this user can add expense in the users portal
 @login_required
 def user_addexpense(request):
     if request.method == 'POST':
@@ -83,40 +87,52 @@ def user_addexpense(request):
             return redirect('user_dashboard')  # Redirect to user dashboard after saving
     else:
         form = NewExpenseForm()  # Initialize the form for GET request
-
-    # Render the form again if the request method is GET or the form is not valid
     return render(request, 'UsersDashboard/user_addexpenses.html', {'form': form})
 
+@login_required
+def edit_expense(request, expense_id):
+    expense = get_object_or_404(NewExpense, expenseid=expense_id)
+    if request.method == 'POST':
+        form = NewExpenseForm(request.POST, instance=expense)
+        if form.is_valid():
+            form.save()
+            return redirect('user_expenses')  # Redirect to the correct URL for the expense list page
+    else:
+        form = NewExpenseForm(instance=expense)
+    return render(request, 'user_editexpenses.html', {'form': form})
 
 
 
+@login_required
+def delete_expense(request, expense_id):
+    expense = get_object_or_404(NewExpense, expenseid=expense_id)
+    
+    if request.method == 'POST':  # Confirming the delete action
+        expense.delete()
+        return redirect('user_expense')  # Redirect to the list of expenses
 
-
-
-def ViewProfile(request):
-    # Render the view_profile.html template
-    user = request.user
-    return render(request, 'UsersDashboard/user_profile.html', {'user': user})
-
-
+    return render(request, 'confirm_delete.html', {'expense': expense})
 
 
 
 
 
 def UserExpenseReport(request):
-    # Render the userexpense_report.html template
     return render(request, 'UsersDashboard/userexpense_report.html')
 
+def ViewProfile(request):
+    user = request.user
+    return render(request, 'UsersDashboard/user_profile.html', {'user': user})
 
-###################################################################################################################
+###############################################################################################################################################
+
+#ADMINS PORTAL 
 
 #getting users list in admin page
 def Users(request):
     
     if not request.user.is_superuser:
         return redirect('home')
-
     form = UsersForm()
     data=User.objects.all()
     context={
@@ -202,31 +218,81 @@ def AddExpense(request):
 
 
 #expense report in admin portal
+# @login_required
+# def ExpenseReport(request):
+        
+#     expenses = NewExpense.objects.all()
+#     total_expenses = int(expenses.aggregate(Sum('amount'))['amount__sum'] or 0)
+#     num_entries = expenses.count()
+#     num_employees = NewExpense.objects.count()
+#     expense_per_employee = int(total_expenses / num_employees) if num_employees > 0 else 0
+   
+#     return render(request, 'expensereport.html', {
+#         'expenses': expenses,
+#         'total_expenses': total_expenses,
+#         'num_entries': num_entries,
+#         'num_employees': num_employees,
+#         'expense_per_employee': expense_per_employee,
+#     })
+
 @login_required
 def ExpenseReport(request):
-    # Check if the user is an admin
-    if request.user.is_staff:
-        # Admin sees all expenses
-        expenses = NewExpense.objects.all()
-    else:
-        # Regular user sees only their own expenses
-        expenses = NewExpense.objects.filter(user=request.user)
+    # Query all expenses
+    expenses = NewExpense.objects.all()
 
-    # Calculate tal_expenses = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+    # Calculate total expenses
+    total_expenses = int(expenses.aggregate(Sum('amount'))['amount__sum'] or 0)
+
+    # Get total number of expenses (entries) and total number of unique users
     num_entries = expenses.count()
-    
+    num_employees = User.objects.count()  # Assuming all users are employees
+
+    # Average expense per employee
+    expense_per_employee = int(total_expenses / num_employees) if num_employees > 0 else 0
+
+    # Calculate expenses for the current month
+    current_month = timezone.now().month
+    current_year = timezone.now().year
+    current_month_expenses = expenses.filter(date__month=current_month, date__year=current_year)
+    total_current_month_expenses = int(current_month_expenses.aggregate(Sum('amount'))['amount__sum'] or 0)
+    average_current_month_expense = int(total_current_month_expenses / num_employees) if num_employees > 0 else 0
+
     return render(request, 'expensereport.html', {
         'expenses': expenses,
         'total_expenses': total_expenses,
         'num_entries': num_entries,
+        'num_employees': num_employees,
+        'expense_per_employee': expense_per_employee,
+        'total_current_month_expenses': total_current_month_expenses,
+        'average_current_month_expense': average_current_month_expense,
+        'current_month': current_month,      # Add this
+        'current_year': current_year, 
     })
 
+@login_required
+def MonthlyExpenseReport(request):
+    # Get the month and year from query parameters (e.g., ?month=10&year=2024)
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+
+    if month and year:
+        monthly_expenses = NewExpense.objects.filter(date__month=month, date__year=year)
+        total_monthly_expenses = int(monthly_expenses.aggregate(Sum('amount'))['amount__sum'] or 0)
+    else:
+        monthly_expenses = NewExpense.objects.none()  # Empty queryset if no month or year
+        total_monthly_expenses = 0
+
+    return render(request, 'monthlyexpensereport.html', {
+        'monthly_expenses': monthly_expenses,
+        'total_monthly_expenses': total_monthly_expenses,
+        'month': month,
+        'year': year,
+    })
 
 #logout logic
 def LogoutPage(request):
         logout(request)
         return redirect('login')
-
 
 
 
