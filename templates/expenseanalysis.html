@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Analysis</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f3f4f6, #e0e7ff);
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h1 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        select, button {
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        #expenseChart {
+            max-width: 100%;
+            height: 400px;
+            margin-top: 20px;
+        }
+        .loading {
+            font-size: 1.2rem;
+            color: #555;
+            margin-top: 20px;
+        }
+        .error {
+            color: #ff4d4f;
+            margin-top: 20px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Expense Analysis</h1>
+
+        <!-- Analysis Type Selection -->
+        <select id="analysisType">
+            <option value="monthly">Monthly Analysis</option>
+            <option value="yearly">Yearly Analysis</option>
+            <option value="quarterly">Quarterly Analysis</option>
+        </select>
+        <button onclick="fetchAnalysisData()">Analyze</button>
+
+        <!-- Loading and Error Messages -->
+        <div id="loadingMessage" class="loading" style="display: none;">Loading data...</div>
+        <div id="errorMessage" class="error" style="display: none;">Failed to fetch data. Please check the server or network.</div>
+
+        <!-- Chart Container -->
+        <canvas id="expenseChart"></canvas>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        let expenseChart;
+
+        function fetchAnalysisData() {
+            const analysisType = document.getElementById('analysisType').value;
+            document.getElementById('loadingMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+
+            fetch(`?analysis_type=${analysisType}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                document.getElementById('loadingMessage').style.display = 'none';
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                updateChart(data.labels, data.data);
+            })
+            .catch(error => {
+                document.getElementById('errorMessage').style.display = 'block';
+                console.error('Fetch error:', error);
+            });
+        }
+
+        function updateChart(labels, data) {
+            if (expenseChart) expenseChart.destroy();
+
+            expenseChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Expense Amount ($)',
+                        data: data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

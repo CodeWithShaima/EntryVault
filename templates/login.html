@@ -2,132 +2,167 @@
 <html lang="en">
 <head>
     <title>Login Page</title>
-     <style media="screen">
-    *,
-    *:before,
-    *:after {
-        padding: 0;
-        margin: 0;
-        box-sizing: border-box;
-    }
+    <style media="screen">
+        *,
+        *:before,
+        *:after {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-        background: linear-gradient(135deg, #f3f4f6 0%, #e0e7ff 100%); /* Soft gradient background */
-        font-family: 'Poppins', sans-serif;
-    }
+        body {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e0e7ff 100%); /* Soft gradient background */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: 'Poppins', sans-serif;
+        }
 
-    form {
-        height: 520px;
-        width: 400px;
-        background-color: #ffffff; /* White background for the form */
-        position: absolute;
-        transform: translate(-50%, -50%);
-        top: 50%;
-        left: 50%;
-        border-radius: 15px; /* More rounded corners */
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Softer shadow for depth */
-        padding: 50px 35px;
-        overflow: hidden; /* Prevent overflow */
-    }
+        .background {
+            position: absolute;
+            width: 430px;
+            height: 520px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
 
-    form h3 {
-        font-size: 32px;
-        font-weight: 600; /* Bolder title */
-        line-height: 42px;
-        text-align: center;
-        color: #4a4a4a; /* Dark gray title color */
-        margin-bottom: 20px; /* Space below the title */
-    }
+        .background .shape {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+        }
 
-    label {
-        display: block;
-        margin-top: 30px;
-        font-size: 16px;
-        font-weight: 500;
-        color: #4a4a4a; /* Darker color for labels */
-    }
+        .shape:first-child {
+            background: linear-gradient(#1845ad, #23a2f6); /* Gradient for the first shape */
+            top: -80px;
+            right: -80px;
+        }
 
-    input {
-        display: block;
-        height: 50px;
-        width: 100%;
-        background-color: rgba(240, 240, 240, 0.9); /* Light gray input background */
-        border-radius: 5px;
-        padding: 0 10px;
-        margin-top: 8px;
-        font-size: 14px;
-        font-weight: 300;
-        color: #333; /* Dark text for inputs */
-        transition: all 0.3s; /* Smooth transition */
-        border: 2px solid transparent; /* Border for focus effect */
-    }
+        .shape:last-child {
+            background: linear-gradient(to right, #ff512f, #f09819); /* Gradient for the second shape */
+            bottom: -80px;
+            left: -30px;
+        }
 
-    input:focus {
-        background-color: #ffffff; /* White background on focus */
-        border-color: #007bff; /* Blue border on focus */
-        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Shadow effect on focus */
-    }
+        form {
+            background-color: #ffffff38; /* White background for the form */
+            border-radius: 15px; /* More rounded corners */
+            padding: 50px 35px;
+            width: 450px; /* Keep the same width */
+            position: relative;
+            z-index: 1;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Softer shadow for depth */
+        }
 
-    ::placeholder {
-        color: #999; /* Medium gray for placeholder text */
-    }
+        form h3 {
+            font-size: 32px;
+            font-weight: 600; /* Bolder title */
+            line-height: 42px;
+            text-align: center;
+            color: #4a4a4a; /* Dark gray title color */
+            margin-bottom: 20px; /* Space below the title */
+        }
 
-    button {
-        margin-top: 50px;
-        width: 100%;
-        background: linear-gradient(90deg, #ff6a00, #ee0979); /* Gradient button background */
-        color: #ffffff; /* White text on button */
-        padding: 15px 0;
-        font-size: 18px;
-        font-weight: 600;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: all 0.3s; /* Smooth transition for hover */
-        border: none; /* Remove border */
-        position: relative; /* Position for pseudo-element */
-        overflow: hidden; /* Prevent overflow */
-    }
+        label {
+            color: #4a4a4a; /* Darker color for labels */
+            font-size: 16px;
+            margin-top: 15px;
+            display: block;
+        }
 
-    button::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 50%;
-        width: 300%;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.1); /* Light overlay */
-        transform: translateX(-50%) translateY(-100%);
-        transition: all 0.3s; /* Smooth transition */
-        z-index: 0; /* Behind the button text */
-    }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: rgba(240, 240, 240, 0.9); /* Light gray input background */
+            color: #333; /* Dark text for inputs */
+        }
 
-    button:hover::after {
-        transform: translateX(-50%) translateY(0); /* Slide effect on hover */
-    }
+        input:focus {
+            background-color: #ffffff; /* White background on focus */
+            border-color: #007bff; /* Blue border on focus */
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Shadow effect on focus */
+        }
 
-    button:hover {
-        transform: translateY(-2px); /* Lift effect on hover */
-    }
+        ::placeholder {
+            color: #999; /* Medium gray for placeholder text */
+        }
 
-    button span {
-        position: relative; /* Position for text */
-        z-index: 1; /* Above the overlay */
-    }
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 18px;
+            color: #ffffff; /* White text on button */
+            background: linear-gradient(90deg, #ff6a00, #ee0979); /* Gradient button background */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            position: relative; /* Position for pseudo-element */
+            overflow: hidden; /* Prevent overflow */
+        }
 
-    .social {
-        margin-top: 30px;
-        display: flex;
-        justify-content: space-between; /* Space between social buttons */
-    }
+        button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 300%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1); /* Light overlay */
+            transform: translateX(-50%) translateY(-100%);
+            transition: all 0.3s; /* Smooth transition */
+            z-index: 0; /* Behind the button text */
+        }
 
-    .social div {
-        background-color: rgba(0, 123, 255, 0.1); /* Light blue background for social buttons */
-        color: #007bff; /* Blue text */
-        text-align: center;
-        width: 150px;
+        button:hover::after {
+            transform: translateX(-50%) translateY(0); /* Slide effect on hover */
+        }
 
-    }
+        button:hover {
+            transform: translateY(-2px); /* Lift effect on hover */
+        }
+
+        button span {
+            position: relative; /* Position for text */
+            z-index: 1; /* Above the overlay */
+        }
+
+        a {
+            color: #4a4a4a; /* Darker color for links */
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            text-decoration: none;
+        }
+
+        .social {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between; /* Space between social buttons */
+        }
+
+        .social div {
+            background-color: rgba(0, 123, 255, 0.1); /* Light blue background for social buttons */
+            color: #007bff; /* Blue text */
+            text-align: center;
+            width: 150px;
+        }
     </style>
+
+<div class="background">
+    <div class="shape"></div>
+    <div class="shape"></div>
+</div>
+
 </head>
 <body>
     {% if messages %}
@@ -149,7 +184,7 @@
 
         <button type="submit">Log In</button>
 
-        <a href="{% url 'signup' %}" >Create a account</a>
+        <a href="{% url 'signup' %}">Create an account</a>
     </form>
 </body>
 </html>

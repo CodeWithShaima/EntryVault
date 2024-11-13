@@ -3,45 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <title>Add User</title>
+    <style>
+        *, *:before, *:after {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #eeeff1, #fcbb89, #addbf9); /* Your color palette in gradient */
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .background .shape {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+        }
+
+        .shape:first-child {
+            background: linear-gradient(#f0f0f1, #23a2f6); /* Dark to blue gradient */
+            top: -50px;
+            left: -50px;
+        }
+
+        .shape:last-child {
+            background: linear-gradient(to right, #ff512f, #f09819); /* Orange gradient */
+            bottom: -50px;
+            right: -50px;
+        }
+
+        .form-container {
+            width: 80%; /* Wider container */
+            max-width: 600px; /* Limit max width */
+            background: rgba(255, 255, 255, 0.311); /* Slightly transparent white */
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        label {
+            color: #333;
+            font-size: 16px;
+            margin-top: 15px;
+            display: block;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(240, 240, 240, 0.9); /* Light gray input background */
+            color: #333;
+            font-size: 16px;
+        }
+
+        input:focus {
+            background: #ffffff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 25px;
+            font-size: 18px;
+            color: #ffffff;
+            background: linear-gradient(90deg, #ff512f, #f09819); /* Gradient button in warm tones */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: linear-gradient(90deg, #f09819, #ff512f); /* Reverse gradient on hover */
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col col-8 offset-2">
-                <h3 class="alert alert-success text-center">Add New User</h3>
-                
-                {% if messages %}
-                <div class="alert alert-success text-center" id="notification">{{ messages|join:"<br>"|safe }}</div>
-                {% for message in messages %}
-                {{ message }}<br>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-                {% if user.is_authenticated and user.is_superuser %}
-    <a href="{% url 'adduser' %}">Add User</a>
-{% endif %}
-
-                <form method="POST" action="{% url 'adduser' %}">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="username">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary mt-3">Add User</button>
-                </form>
-            </div>
-        </div>
+    <div class="background">
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+    <div class="form-container">
+        <h3>Add New User</h3>
+        <form method="POST" action="{% url 'adduser' %}">
+            {% csrf_token %}
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+            
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+            
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+            
+            <button type="submit">Add User</button>
+        </form>
     </div>
 </body>
 </html>

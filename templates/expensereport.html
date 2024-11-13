@@ -1,138 +1,328 @@
-<!-- <!DOCTYPE html>
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Summary</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container mt-5">
-        <h1 class="text-center">Expense Summary</h1>
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Expenses</h5>
-                        <p class="card-text">{{ total_expenses }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Number of Employees</h5>
-                        <p class="card-text">{{ num_employees }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Expenses per Employee</h5>
-                        <p class="card-text">{{ expense_per_employee }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-</html>  -->
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Summary</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>Admin Expense Report</title>
+    <style>
+        /* General Body Styling */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f3f4f6, #e0e7ff);
+            margin: 0;
+        }
+
+        /* Background Circles */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .background .shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .background .shape.shape1 {
+            background: linear-gradient(135deg, #0a51f6, #70bff5);
+            width: 350px;
+            height: 350px;
+            top: 10%;
+            left: 5%;
+        }
+
+        .background .shape.shape2 {
+            background: linear-gradient(135deg, #f33711, #fc990e);
+            width: 300px;
+            height: 300px;
+            bottom: 15%;
+            right: 5%;
+        }
+
+        /* Main Container for Organized Layout */
+        .container {
+   
+            width: 95%;
+            max-width: 1000px;
+            padding: 30px;
+            background: rgba(251, 239, 239, 0.7); /* Transparent Background */
+            border-radius: 15px;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            
+        }
+
+         /* Corner Circles */
+         .container .shape:first-child {
+            background: linear-gradient(#1845ad, #23a2f6); /* Gradient for the first shape */
+            width: 150px;
+            height: 150px;
+            top: -80px;
+            left: -80px;
+            position: absolute;
+        }
+
+        .container .shape:last-child {
+            background: linear-gradient(to right, #ff512f, #f09819); /* Gradient for the second shape */
+            width: 150px;
+            height: 150px;
+            bottom: -80px;
+            right: -30px;
+            position: absolute;
+        }
+
+        /* Header Styling */
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #333;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .search-bar input, .search-bar button {
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+        }
+
+        .search-bar input {
+            background-color: #f3f3f3;
+        }
+
+        .search-bar button {
+            background: linear-gradient(90deg, #ff6a00, #ee0979);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Table Styling */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        tr:hover {
+            background-color: #f0f8ff;
+        }
+
+        /* Totals Section */
+        .totals {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            padding-top: 10px;
+            border-top: 1px solid #f4f2f2;
+            color: #333;
+        }
+
+        /* Expense Analysis Link */
+        .expense-analysis-link {
+            display: inline-block;
+            font-size: 1.1rem;
+            color: #ff6a00;
+            font-weight: bold;
+            margin-top: 15px;
+            text-decoration: none;
+            align-self: flex-end;
+            transition: color 0.3s;
+        }
+
+        .expense-analysis-link:hover {
+            color: #f09819;
+        }
+
+      /* Styling for Summary Info Box */
+.summary-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    background: rgba(255, 255, 255, 0.9); /* Slightly transparent white */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.summary-item {
+    flex: 1 1 200px; /* Responsive width */
+    background: linear-gradient(135deg, #f0f8ff, #e0e7ff); /* Light gradient background */
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    font-weight: 300; /* Light font weight */
+    color: #f80b56;
+}
+
+.summary-item strong {
+    display: block;
+    font-size: 1.1rem;
+    color: #585553;
+    font-weight: 300; /* Light font weight for text */
+    margin-bottom: 5px;
+}
+
+ /* Expense Analysis Button */
+ .expense-analysis-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(90deg, #ff6a00, #ee0979);
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            transition: background 0.3s;
+            cursor: pointer;
+            margin-top: 15px;
+            align-self: flex-end;
+        }
+
+        .expense-analysis-btn:hover {
+            background: linear-gradient(90deg, #ee0979, #ff6a00);
+        }
+
+        
+    </style>
+
+        <!-- Background Shapes -->
+        <div class="background">
+            <div class="shape shape1"></div>
+            <div class="shape shape2"></div>
+        </div>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center">Expense Summary</h1>
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Expenses</h5>
-                        <p class="card-text">{{ total_expenses }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Number of Employees</h5>
-                        <p class="card-text">{{ num_employees }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Expenses per Employee</h5>
-                        <p class="card-text">{{ expense_per_employee }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Current Month Expense Details -->
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Total Expenses This Month</h5>
-                        <a href="{% url 'monthlyexpensereport' %}?month={{ current_month }}&year={{ current_year }}" class="card-link">
-                        {{ total_current_month_expenses }}
-                    </a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">Average Expense per Employee (This Month)</h5>
-                        <p class="card-text">{{ average_current_month_expense }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Detailed Expense Table -->
-        <div class="mt-5">
-            <h2>Expense Details</h2>
-            <table class="table table-bordered">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Expense ID</th>
-                        <th>Expense Name</th>
-                        <th>Amount</th>
-                        <th>Location</th>
-                        <th>Date</th>
-                        <th>User</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for expense in expenses %}
-                    <tr>
-                        <td>{{ expense.expenseid }}</td>
-                        <td>{{ expense.expensename }}</td>
-                        <td>{{ expense.amount }}</td>
-                        <td>{{ expense.location }}</td>
-                        <td>{{ expense.date }}</td>
-                        <td>{{ expense.user.username }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center">No expenses recorded.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<div class="container">
+    <h1>Admin Expense Report</h1>
+
+    <!-- Summary Info Box -->
+    <div class="summary-box">
+        <div class="summary-item">
+            <strong>Total Expense:</strong> ${{ total_expenses }}
+        </div>
+        <div class="summary-item">
+            <strong>Number of Entries:</strong> {{ num_entries }}
+        </div>
+        <div class="summary-item">
+            <strong>Number of Employees:</strong> {{ num_employees }}
+        </div>
+        <div class="summary-item">
+            <strong>Expense Per Employee:</strong> ${{ expense_per_employee }}
+        </div>
+        <div class="summary-item">
+            <strong>Total Expense This Month:</strong> ${{ total_current_month_expenses }}
+        </div>
+        <div class="summary-item">
+            <strong>Average Expense This Month:</strong> ${{ average_current_month_expense }}
         </div>
     </div>
+
+    
+
+    <a href="{% url 'expenseanalysis' %}" class="expense-analysis-btn">Expense Analysis</a>
+    
+    <!-- Search Form -->
+    <div class="search-bar-container">
+        <form method="get" action="{% url 'expensereport' %}">
+            <div class="search-bar">
+                <input type="text" name="user_name" placeholder="User Name" value="{{ user_name }}">
+                <input type="text" name="expense_name" placeholder="Expense Name" value="{{ expense_name }}">
+                <input type="text" name="location" placeholder="Location" value="{{ location }}">
+                <input type="number" name="amount" placeholder="Amount" value="{{ amount }}">
+                <input type="date" name="from_date" placeholder="From Date" value="{{ from_date }}">
+                <input type="date" name="to_date" placeholder="To Date" value="{{ to_date }}">
+                <button type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Expense List Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>User Name</th>
+                <th>Expense Name</th>
+                <th>Location</th>
+                <th>Amount</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in page_obj %}
+            <tr>
+                <td>{{ expense.user.username }}</td>
+                <td>{{ expense.expensename }}</td>
+                <td>{{ expense.location }}</td>
+                <td>{{ expense.amount }}</td>
+                <td>{{ expense.date }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No expenses found matching your criteria.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">First</a>
+            <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        {% endif %}
+    </div>
+</div>
+
 </body>
 </html>

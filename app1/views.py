@@ -8,8 +8,12 @@ from django.contrib.auth.decorators import user_passes_test
 from .models import NewExpense
 from django.http import JsonResponse
 from django.db.models import Sum,Avg
+from django.core.paginator import Paginator
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+import logging
+from datetime import datetime
+from django.db.models.functions import ExtractMonth
 
 
 @login_required(login_url='login')
@@ -121,10 +125,8 @@ def UserExpenseReport(request):
     from_date = request.GET.get('from_date', '')
     to_date = request.GET.get('to_date', '')
 
-    # Start filtering by user
     expenses = NewExpense.objects.filter(user=user)
 
-    # Apply filters based on user input
     if expense_name:
         expenses = expenses.filter(expensename__icontains=expense_name)
     if location:
@@ -164,11 +166,6 @@ def UserExpenseReport(request):
         'to_date': to_date,
     })
 
-
-
-
-# def UserExpenseAnalysis(request):
-#     return render(request, 'UsersDashboard/user_expenseanalysis.html')
 
 
 def UserExpenseAnalysis(request):
@@ -227,7 +224,6 @@ def ViewProfile(request):
 
 #ADMINS PORTAL 
 
-#getting users list in admin page
 def Users(request):
     
     if not request.user.is_superuser:
@@ -247,22 +243,17 @@ def admin_required(function):
 
 @admin_required
 def adduser(request):
-    if request.method == 'POST':  # Check if the form was submitted
-
-        form = UsersForm(request.POST)  # Populate the form with the submitted data
+    if request.method == 'POST': 
+        form = UsersForm(request.POST) 
         if form.is_valid(): 
                 print("Form is valid")
-            # Check if a user with this email already exists
                 if User.objects.filter(email=form.cleaned_data['email']).exists():
                     return HttpResponse("User  with this email already exists!")
                 form.save()
-                return redirect('users')  # Redirect to the users list or another page
-        else:
-            print("Form errors:", form.errors) 
+                return redirect('home') 
     else:
-        form = UsersForm()  # Create a new empty form
-    
-    return render(request, 'adduser.html', {'form': form})  # Ensure the template name is correct
+        form = UsersForm()
+        return render(request, 'adduser.html', {'form': form}) 
 
 
 #deleting user in urs list in admin portal
@@ -314,116 +305,150 @@ def AddExpense(request):
     return render(request, 'addexpense.htmt', {'form': form, 'expenses': expenses})
 
 
-
-
-#expense report in admin portal
-# @login_required
-# def ExpenseReport(request):
-        
-#     expenses = NewExpense.objects.all()
-#     total_expenses = int(expenses.aggregate(Sum('amount'))['amount__sum'] or 0)
-#     num_entries = expenses.count()
-#     num_employees = NewExpense.objects.count()
-#     expense_per_employee = int(total_expenses / num_employees) if num_employees > 0 else 0
-   
-#     return render(request, 'expensereport.html', {
-#         'expenses': expenses,
-#         'total_expenses': total_expenses,
-#         'num_entries': num_entries,
-#         'num_employees': num_employees,
-#         'expense_per_employee': expense_per_employee,
-#     })
-
 @login_required
 def ExpenseReport(request):
-    # Query all expenses
+
+      # Retrieve filter parameters
+    user_name = request.GET.get('user_name', '')  
+    expense_name = request.GET.get('expense_name', '')
+    location = request.GET.get('location', '')
+    amount = request.GET.get('amount', '')
+    from_date = request.GET.get('from_date', '')
+    to_date = request.GET.get('to_date', '')
+    # Start with all expenses, filtering by user name if provided
     expenses = NewExpense.objects.all()
 
-    # Calculate total expenses
-    total_expenses = int(expenses.aggregate(Sum('amount'))['amount__sum'] or 0)
+    if user_name:
+        expenses = expenses.filter(user__username__icontains=user_name)
+    if expense_name:
+        expenses = expenses.filter(expensename__icontains=expense_name)
+    if location:
+        expenses = expenses.filter(location__icontains=location)
+    if amount:
+        expenses = expenses.filter(amount__exact=amount)
+    if from_date:
+        expenses = expenses.filter(date__gte=from_date)
+    if to_date:
+        expenses = expenses.filter(date__lte=to_date)
 
-    # Get total number of expenses (entries) and total number of unique users
-    num_entries = expenses.count()
-    num_employees = User.objects.count()  # Assuming all users are employees
+    paginator = Paginator(expenses, 10) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)    
 
-    # Average expense per employee
-    expense_per_employee = int(total_expenses / num_employees) if num_employees > 0 else 0
+    # Calculate total expenses and other aggregate values
+    total_expenses = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+    num_entries = expenses.count()  # Total number of expense entries
+    num_employees = expenses.values('user').distinct().count() 
+    expense_per_employee = total_expenses / num_employees if num_employees else 0
 
-    # Calculate expenses for the current month
+    # Current month expenses
     current_month = timezone.now().month
     current_year = timezone.now().year
     current_month_expenses = expenses.filter(date__month=current_month, date__year=current_year)
-    total_current_month_expenses = int(current_month_expenses.aggregate(Sum('amount'))['amount__sum'] or 0)
-    average_current_month_expense = int(total_current_month_expenses / num_employees) if num_employees > 0 else 0
+    total_current_month_expenses = current_month_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+    average_current_month_expense = current_month_expenses.aggregate(Avg('amount'))['amount__avg'] or 0
 
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        expenses_data = list(page_obj.object_list.values('user__username', 'expensename', 'location', 'amount', 'date'))
+        return JsonResponse({
+            'expenses': expenses_data,
+            'total_expenses': total_expenses,
+            'num_entries': num_entries,
+            'num_employees': num_employees,
+            'expense_per_employee': expense_per_employee,
+            'total_current_month_expenses': total_current_month_expenses,
+            'average_current_month_expense': average_current_month_expense,
+            'current_month': current_month,
+            'current_year': current_year,
+            'has_next': page_obj.has_next(),
+            'has_previous': page_obj.has_previous(),
+            'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None,
+            'previous_page_number': page_obj.previous_page_number() if page_obj.has_previous() else None,
+        })
+
+
+    # Render data for full page load
     return render(request, 'expensereport.html', {
-        'expenses': expenses,
+        'page_obj': page_obj,
         'total_expenses': total_expenses,
         'num_entries': num_entries,
         'num_employees': num_employees,
         'expense_per_employee': expense_per_employee,
         'total_current_month_expenses': total_current_month_expenses,
         'average_current_month_expense': average_current_month_expense,
-        'current_month': current_month,      # Add this
-        'current_year': current_year, 
+        'current_month': current_month,
+        'current_year': current_year,
+        'user_name': user_name,
+        'expense_name': expense_name,
+        'location': location,
+        'amount': amount,
+        'from_date': from_date,
+        'to_date': to_date,
     })
+
+logger = logging.getLogger(__name__)
 
 @login_required
-def MonthlyExpenseReport(request):
-    # Get the month and year from query parameters (e.g., ?month=10&year=2024)
-    month = request.GET.get('month')
-    year = request.GET.get('year')
+def ExpenseAnalysis(request):
+    if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        analysis_type = request.GET.get('analysis_type')
 
-    if month and year:
-        monthly_expenses = NewExpense.objects.filter(date__month=month, date__year=year)
-        total_monthly_expenses = int(monthly_expenses.aggregate(Sum('amount'))['amount__sum'] or 0)
-    else:
-        monthly_expenses = NewExpense.objects.none()  # Empty queryset if no month or year
-        total_monthly_expenses = 0
+        if analysis_type == 'monthly':
+            # Get monthly expenses grouped by month of the current year
+            current_year = datetime.now().year
+            expenses = (Expense.objects.filter(date__year=current_year)
+                        .values('date__month')
+                        .annotate(total=Sum('amount'))
+                        .order_by('date__month'))
+            
+            labels = [f'Month {i+1}' for i in range(12)]
+            data = [0] * 12  # Initialize data array for 12 months
+            
+            for expense in expenses:
+                month_index = expense['date__month'] - 1  # Convert to zero-based index
+                data[month_index] = expense['total']
 
-    return render(request, 'monthlyexpensereport.html', {
-        'monthly_expenses': monthly_expenses,
-        'total_monthly_expenses': total_monthly_expenses,
-        'month': month,
-        'year': year,
-    })
+            return JsonResponse({'labels': labels, 'data': data})
+
+        elif analysis_type == 'yearly':
+            # Get yearly expenses grouped by year
+            expenses = (Expense.objects
+                        .values('date__year')
+                        .annotate(total=Sum('amount'))
+                        .order_by('date__year'))
+            
+            labels = []
+            data = []
+            
+            for expense in expenses:
+                labels.append(str(expense['date__year']))
+                data.append(expense['total'])
+
+            return JsonResponse({'labels': labels, 'data': data})
+
+        elif analysis_type == 'quarterly':
+            # Get quarterly expenses grouped by quarter of the current year
+            current_year = datetime.now().year
+            expenses = (Expense.objects.filter(date__year=current_year)
+                        .annotate(quarter=((ExtractMonth('date') - 1) // 3 + 1))
+                        .values('quarter')
+                        .annotate(total=Sum('amount'))
+                        .order_by('quarter'))
+            
+            labels = ['Q1', 'Q2', 'Q3', 'Q4']
+            data = [0] * 4  # Initialize data array for 4 quarters
+
+            for expense in expenses:
+                quarter_index = expense['quarter'] - 1  # Convert to zero-based index
+                data[quarter_index] = expense['total']
+
+            return JsonResponse({'labels': labels, 'data': data})
+
+    # Default response to render the HTML template for non-AJAX GET requests
+    return render(request, 'expenseanalysis.html')
 
 #logout logic
 def LogoutPage(request):
         logout(request)
         return redirect('login')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# #for user_dashboard adding expense function
-# @login_required
-# def user_addexpense(request):
-#     form=NewExpenseForm()
-#     if request.method == 'POST':
-#         form=NewExpenseForm(request.POST)
-#         if form.is_valid():
-#             expense = form.save(commit=False)
-#             expense.user = request.user
-#             expense.save()
-#             messages.success(request, 'Expense added successfully!')
-#             return redirect('user_dashboard')   
-#     return redirect(request, 'user_editexpenses.html' , {'form:form'})
 
