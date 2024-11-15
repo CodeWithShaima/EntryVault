@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Analysis</title>
     <style>
+        /* General Body Styling */
         body {
             display: flex;
             justify-content: center;
@@ -14,41 +15,116 @@
             background: linear-gradient(135deg, #f3f4f6, #e0e7ff);
             margin: 0;
         }
+
+        /* Background Shapes */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .background .shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .background .shape.shape1 {
+            background: linear-gradient(135deg, #0a51f6, #70bff5);
+            width: 350px;
+            height: 350px;
+            top: 10%;
+            left: 5%;
+        }
+
+        .background .shape.shape2 {
+            background: linear-gradient(135deg, #f33711, #fc990e);
+            width: 300px;
+            height: 300px;
+            bottom: 15%;
+            right: 5%;
+        }
+
+        /* Main Container for Organized Layout */
         .container {
             max-width: 800px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            background: rgba(251, 239, 239, 0.7); /* Transparent Background */
             border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
             text-align: center;
+            position: relative;
         }
+
+        /* Corner Circles */
+        .container .shape:first-child {
+            background: linear-gradient(#1845ad, #23a2f6); /* Gradient for the first shape */
+            width: 150px;
+            height: 150px;
+            top: -80px;
+            left: -80px;
+            position: absolute;
+        }
+
+        .container .shape:last-child {
+            background: linear-gradient(to right, #ff512f, #f09819); /* Gradient for the second shape */
+            width: 150px;
+            height: 150px;
+            bottom: -80px;
+            right: -30px;
+            position: absolute;
+        }
+
+        /* Header Styling */
         h1 {
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: #333;
             margin-bottom: 10px;
         }
+
+        /* Dropdown and Button Styling */
         select, button {
             padding: 10px;
             border-radius: 8px;
             font-size: 1rem;
             margin: 10px 0;
+            border: 1px solid #ddd;
         }
+
+        select {
+            background-color: #f3f3f3;
+        }
+
         button {
-            background-color: #007bff;
+            background: linear-gradient(90deg, #ff6a00, #ee0979);
             color: #fff;
-            border: none;
+            font-weight: bold;
             cursor: pointer;
+            border: none;
         }
+
+        button:hover {
+            background: linear-gradient(90deg, #ee0979, #ff6a00);
+        }
+
+        /* Chart Styling */
         #expenseChart {
             max-width: 100%;
             height: 400px;
             margin-top: 20px;
         }
+
+        /* Loading and Error Messages */
         .loading {
             font-size: 1.2rem;
             color: #555;
             margin-top: 20px;
         }
+
         .error {
             color: #ff4d4f;
             margin-top: 20px;
@@ -57,6 +133,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <!-- Background Shapes -->
+    <div class="background">
+        <div class="shape shape1"></div>
+        <div class="shape shape2"></div>
+    </div>
+
     <div class="container">
         <h1>Expense Analysis</h1>
 
@@ -65,6 +147,7 @@
             <option value="monthly">Monthly Analysis</option>
             <option value="yearly">Yearly Analysis</option>
             <option value="quarterly">Quarterly Analysis</option>
+            <option value="daily">Daily Analysis</option>
         </select>
         <button onclick="fetchAnalysisData()">Analyze</button>
 
@@ -84,25 +167,27 @@
             const analysisType = document.getElementById('analysisType').value;
             document.getElementById('loadingMessage').style.display = 'block';
             document.getElementById('errorMessage').style.display = 'none';
+            
+            fetch(`/user/userexpense-analysis/?analysis_type=${analysisType}`, {
+    headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+    }
+})
+.then(response => {
+    document.getElementById('loadingMessage').style.display = 'none';
+    if (!response.ok) throw new Error(`Server error: ${response.status} ${response.statusText}`);
+    return response.json();
+})
+.then(data => {
+    console.log("Fetched Data:", data);
+    updateChart(data.labels, data.data);
+})
+.catch(error => {
+    document.getElementById('errorMessage').style.display = 'block';
+    console.error('Fetch error:', error);
+});    
 
-            fetch(`?analysis_type=${analysisType}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => {
-                document.getElementById('loadingMessage').style.display = 'none';
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.json();
-            })
-            .then(data => {
-                updateChart(data.labels, data.data);
-            })
-            .catch(error => {
-                document.getElementById('errorMessage').style.display = 'block';
-                console.error('Fetch error:', error);
-            });
-        }
+  }
 
         function updateChart(labels, data) {
             if (expenseChart) expenseChart.destroy();
@@ -131,4 +216,4 @@
         }
     </script>
 </body>
-</html>
+</html>  

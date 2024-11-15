@@ -1,82 +1,283 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.0.1/chart.min.css">
+    <style>
+        /* Your styling here (from your provided code) */
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Expense Analysis</h1>
+        <select id="analysisType">
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="daily">Daily</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="yearly">Yearly</option>
+        </select>
+        <button onclick="fetchAnalysisData()">Analyze</button>
+        <canvas id="expenseChart"></canvas>
+        <div id="errorMessage" style="color: red; display: none;">Error fetching data.</div>
+    </div>
+    <script>
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        let expenseChart;
+
+        function fetchAnalysisData() {
+            const analysisType = document.getElementById('analysisType').value;
+
+            fetch(`/user/userexpense-analysis/?analysis_type=${analysisType}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Network error");
+                return response.json();
+            })
+            .then(data => {
+                if (expenseChart) expenseChart.destroy();
+                expenseChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Expenses',
+                            data: data.data,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true
+                    }
+                });
+            })
+            .catch(() => {
+                document.getElementById('errorMessage').style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html> -->
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Expense Analysis</title>
+    <title>User Expense Report</title>
     <style>
-        /* Your existing styles */
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
-        h1 { text-align: center; }
-        .search-bar { margin-bottom: 20px; text-align: center; }
-        input[type="text"], select, button { padding: 10px; margin: 5px; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        .back-link { display: block; margin: 20px 0; text-align: center; font-size: 18px; color: #007bff; text-decoration: none; }
-        .back-link:hover { text-decoration: underline; }
-    </style>
-</head>
-<body>
-
-    <h1>User Expense Analysis</h1>
-
-    <div class="search-bar">
-        <select id="analysisType">
-            <option value="">Select Analysis Type</option>
-            <option value="monthly">Monthly Expense Analysis</option>
-            <option value="yearly">Yearly Expense Analysis</option>
-            <option value="quarterly">Quarterly Expense Analysis</option>
-        </select>
-        <button type="button" onclick="fetchData()">Analyze</button>
-    </div>
-
-    <canvas id="expenseChart" width="400" height="200"></canvas>
-    <a href="{% url 'user_expensereport' %}" class="back-link">Back to Expense Report</a>
-
-    <!-- Chart.js library -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <script>
-        let expenseChart;
-
-        function fetchData() {
-            const analysisType = document.getElementById('analysisType').value;
-
-            if (analysisType) {
-                fetch(`/user/userexpense-anaysis/?analysis_type=${analysisType}`, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(response => response.json())
-                .then(data => renderChart(data.labels, data.data))
-                .catch(error => console.error('Error fetching data:', error));
-            } else {
-                alert('Please select an analysis type');
-            }
+        /* General Body Styling */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f3f4f6, #e0e7ff);
+            margin: 0;
         }
 
-        function renderChart(labels, data) {
-            const ctx = document.getElementById('expenseChart').getContext('2d');
+        /* Background Shapes */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .background .shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .background .shape.shape1 {
+            background: linear-gradient(135deg, #0a51f6, #70bff5);
+            width: 350px;
+            height: 350px;
+            top: 10%;
+            left: 5%;
+        }
+
+        .background .shape.shape2 {
+            background: linear-gradient(135deg, #f33711, #fc990e);
+            width: 300px;
+            height: 300px;
+            bottom: 15%;
+            right: 5%;
+        }
+
+        /* Main Container for Organized Layout */
+        .container {
+            max-width: 800px;
+            padding: 30px;
+            background: rgba(251, 239, 239, 0.7); /* Transparent Background */
+            border-radius: 15px;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+
+        /* Corner Circles */
+        .container .shape:first-child {
+            background: linear-gradient(#1845ad, #23a2f6); /* Gradient for the first shape */
+            width: 150px;
+            height: 150px;
+            top: -80px;
+            left: -80px;
+            position: absolute;
+        }
+
+        .container .shape:last-child {
+            background: linear-gradient(to right, #ff512f, #f09819); /* Gradient for the second shape */
+            width: 150px;
+            height: 150px;
+            bottom: -80px;
+            right: -30px;
+            position: absolute;
+        }
+
+        /* Header Styling */
+        h1 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        /* Dropdown and Button Styling */
+        select, button {
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+
+        select {
+            background-color: #f3f3f3;
+        }
+
+        button {
+            background: linear-gradient(90deg, #ff6a00, #ee0979);
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background: linear-gradient(90deg, #ee0979, #ff6a00);
+        }
+
+        /* Chart Styling */
+        #expenseChart {
+            max-width: 100%;
+            height: 400px;
+            margin-top: 20px;
+        }
+
+        /* Loading and Error Messages */
+        .loading {
+            font-size: 1.2rem;
+            color: #555;
+            margin-top: 20px;
+        }
+
+        .error {
+            color: #ff4d4f;
+            margin-top: 20px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Background Shapes -->
+    <div class="background">
+        <div class="shape shape1"></div>
+        <div class="shape shape2"></div>
+    </div>
+
+    <div class="container">
+        <h1>User Expense Report</h1>
+
+        <!-- Analysis Type Selection -->
+        <select id="analysisType">
+            <option value="weekly">Weekly Analysis</option>
+            <option value="monthly">Monthly Analysis</option>
+            <option value="daily">Daily Analysis</option>
+            <option value="quarterly">Quarterly Analysis</option>
+            <option value="yearly">Yearly Analysis</option>
+        </select>
+        <button onclick="fetchUserReport()">Analyze</button>
+
+        <!-- Loading and Error Messages -->
+        <div id="loadingMessage" class="loading" style="display: none;">Loading data...</div>
+        <div id="errorMessage" class="error" style="display: none;">Failed to fetch data. Please check the server or network.</div>
+
+        <!-- Chart Container -->
+        <canvas id="expenseChart"></canvas>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('expenseChart').getContext('2d');
+        let expenseChart;
+
+        function fetchUserReport() {
+            const analysisType = document.getElementById('analysisType').value;
+            document.getElementById('loadingMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
             
-            // If a chart already exists, destroy it before creating a new one
-            if (expenseChart) {
-                expenseChart.destroy();
-            }
+            fetch(`/user/userexpense-analysis/?analysis_type=${analysisType}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                document.getElementById('loadingMessage').style.display = 'none';
+                if (!response.ok) throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                return response.json();
+            })
+            .then(data => {
+                console.log("Fetched Data:", data);
+                updateChart(data.labels, data.data);
+            })
+            .catch(error => {
+                document.getElementById('errorMessage').style.display = 'block';
+                console.error('Fetch error:', error);
+            });
+        }
+
+        function updateChart(labels, data) {
+            if (expenseChart) expenseChart.destroy();
 
             expenseChart = new Chart(ctx, {
-                type: 'bar', // or 'line', 'pie', etc.
+                type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Expense Amount',
+                        label: 'Expense Amount ($)',
                         data: data,
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
                         borderColor: 'rgba(54, 162, 235, 1)',
                         borderWidth: 1
                     }]
                 },
                 options: {
+                    responsive: true,
                     scales: {
-                        y: { beginAtZero: true }
+                        y: {
+                            beginAtZero: true
+                        }
                     }
                 }
             });

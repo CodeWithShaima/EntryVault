@@ -1,37 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Create New Expense</title>
+    <style>
+        *, *:before, *:after {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #eef1f0, #cbd9fd, #f8b66a); /* Gradient color palette */
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .background .shape {
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+        }
+
+        .shape:first-child {
+            background: linear-gradient(#f0f0f1, #23a2f6); /* Dark to blue gradient */
+            top: -50px;
+            left: -50px;
+        }
+
+        .shape:last-child {
+            background: linear-gradient(to right, #ff512f, #f09819); /* Orange gradient */
+            bottom: -50px;
+            right: -50px;
+        }
+
+        .form-container {
+            width: 80%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.311); /* Transparent white */
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        label {
+            color: #333;
+            font-size: 16px;
+            margin-top: 15px;
+            display: block;
+            text-align: left;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: none;
+            border-radius: 5px;
+            background: rgb(240, 240, 240);
+            color: #333;
+            font-size: 16px;
+        }
+
+        input:focus, select:focus {
+            background: #ffffff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            margin-top: 25px;
+            font-size: 18px;
+            color: #ffffff;
+            background: linear-gradient(90deg, #ff512f, #f09819);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: linear-gradient(90deg, #f09819, #9fdefb);
+        }
+
+        .alert {
+            text-align: center;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col col-8 offset-2">
-                {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-success text-center" id="successMessage">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-    
-            <script>
-                // Hide the success message after 3 seconds (3000 milliseconds)
-                setTimeout(function() {
-                    const successMessage = document.getElementById('successMessage');
-                    if (successMessage) {
-                        successMessage.style.display = 'none';
-                    }
-                }, 800);  // Change the 3000 value to control how long the message is shown (in milliseconds)
-            </script>
+    <div class="background">
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+    <div class="form-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
 
-                <h3 class="alert alert-success text-center">Create New Expense</h3>
+        <h3>Create New Expense</h3>
 
-                <form method="POST" action="{% url 'user_addexpenses' %}">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="btn btn-primary mt-3">Submit</button>
-                </form>
-            </div>
-        </div>
+        <form method="POST" action="{% url 'user_addexpenses' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Submit</button>
+        </form>
     </div>
 </body>
 </html>

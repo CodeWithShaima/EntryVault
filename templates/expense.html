@@ -1,12 +1,66 @@
-<!-- expense.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense List</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        *, *:before, *:after {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e1e7f1, #c9d3f5, #f3c0a0);
+            font-family: 'Poppins', sans-serif;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+        }
+
+        .table thead {
+            background: linear-gradient(to right, #ff7e3a, #ff9d5c);
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .table tbody tr {
+            background: rgba(240, 240, 240, 0.9);
+            transition: background-color 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(230, 230, 230, 0.7);
+        }
+
+        .table th, .table td {
+            padding: 12px;
+            text-align: left;
+            font-size: 16px;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-10 text-center">
+    <div class="table-wrapper">
         <h1>Expense List</h1>
         <table class="table table-hover">
             <thead>
@@ -28,7 +82,6 @@
                     <td>{{ i.location }}</td>
                     <td>{{ i.date }}</td>
                     <td>{{ i.user.username }}</td>
-                    
                 </tr>
                 {% endfor %}
             </tbody>
@@ -36,3 +89,4 @@
     </div>
 </body>
 </html>
+

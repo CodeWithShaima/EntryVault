@@ -12,8 +12,10 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 import logging
-from datetime import datetime
-from django.db.models.functions import ExtractMonth
+from datetime import datetime, timedelta
+from django.db.models.functions import ExtractWeek, ExtractQuarter, ExtractDay
+from app1.models import NewExpense
+
 
 
 @login_required(login_url='login')
@@ -89,7 +91,7 @@ def user_addexpense(request):
             messages.success(request, 'Expense added successfully!')
             return redirect('user_dashboard')  # Redirect to user dashboard after saving
     else:
-        form = NewExpenseForm()  # Initialize the form for GET request
+        form = NewExpenseForm()  
     return render(request, 'UsersDashboard/user_addexpenses.html', {'form': form})
 
 
@@ -114,7 +116,6 @@ def delete_expense(request, expense_id):
     return redirect('user_expenses')
 
 
-#################################################################################
 
 @login_required
 def UserExpenseReport(request):
@@ -166,61 +167,90 @@ def UserExpenseReport(request):
         'to_date': to_date,
     })
 
-
-
+@login_required
 def UserExpenseAnalysis(request):
-    if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        analysis_type = request.GET.get('analysis_type')
+    try:
+        if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            analysis_type = request.GET.get('analysis_type')
+            user = request.user  # Current logged-in user
 
-        # Calculate expenses based on analysis type
-        if analysis_type == 'monthly':
-            # Group expenses by month
-            expenses = Expense.objects.raw('SELECT SUM(amount) as total, EXTRACT(MONTH FROM date) as month FROM yourapp_expense GROUP BY month')
-            labels = [f'Month {i+1}' for i in range(12)]
-            data = [0] * 12  # Initialize data array for 12 months
+            current_year = datetime.now().year
+            labels, data = [], []
 
-            # Populate the data array with monthly expenses
-            for expense in expenses:
-                data[expense.month - 1] = expense.total  # Assign total for the month
+            if analysis_type == 'weekly':
+                expenses = (NewExpense.objects.filter(date__year=current_year, user=user)
+                            .annotate(week_number=ExtractWeek('date'))
+                            .values('week_number')
+                            .annotate(total=Sum('amount'))
+                            .order_by('week_number'))
+                labels = [f'Week {i}' for i in range(1, 54)]
+                data = [0] * 53
+                for expense in expenses:
+                    data[expense['week_number'] - 1] = expense['total']
+
+            elif analysis_type == 'monthly':
+                expenses = (NewExpense.objects.filter(date__year=current_year, user=user)
+                            .values('date__month')
+                            .annotate(total=Sum('amount'))
+                            .order_by('date__month'))
+                labels = [f'Month {i + 1}' for i in range(12)]
+                data = [0] * 12
+                for expense in expenses:
+                    data[expense['date__month'] - 1] = expense['total']
+
+            elif analysis_type == 'daily':
+                today = datetime.now().date()
+                start_of_week = today - timedelta(days=today.weekday())
+                end_of_week = start_of_week + timedelta(days=6)
+                expenses = (NewExpense.objects.filter(date__range=[start_of_week, end_of_week], user=user)
+                            .annotate(day=ExtractDay('date'))
+                            .values('date')
+                            .annotate(total=Sum('amount'))
+                            .order_by('date'))
+                labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+                data = [0] * 7
+                for expense in expenses:
+                    day_index = expense['date'].weekday()
+                    data[day_index] = expense['total']
+
+            elif analysis_type == 'quarterly':
+                expenses = (NewExpense.objects.filter(date__year=current_year, user=user)
+                            .annotate(quarter=ExtractQuarter('date'))
+                            .values('quarter')
+                            .annotate(total=Sum('amount'))
+                            .order_by('quarter'))
+                labels = [f'Q{i + 1}' for i in range(4)]
+                data = [0] * 4
+                for expense in expenses:
+                    data[expense['quarter'] - 1] = expense['total']
+
+            elif analysis_type == 'yearly':
+                expenses = (NewExpense.objects.filter(user=user)
+                            .values('date__year')
+                            .annotate(total=Sum('amount'))
+                            .order_by('date__year'))
+                for expense in expenses:
+                    labels.append(str(expense['date__year']))
+                    data.append(expense['total'])
 
             return JsonResponse({'labels': labels, 'data': data})
 
-        elif analysis_type == 'yearly':
-            # Group expenses by year
-            expenses = Expense.objects.raw('SELECT SUM(amount) as total, EXTRACT(YEAR FROM date) as year FROM yourapp_expense GROUP BY year')
-            labels = []
-            data = []
-            
-            for expense in expenses:
-                labels.append(str(expense.year))
-                data.append(expense.total)
+        return render(request, 'UsersDashboard/user_expenseanalysis.html')
 
-            return JsonResponse({'labels': labels, 'data': data})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
-        elif analysis_type == 'quarterly':
-            # Group expenses by quarter
-            expenses = Expense.objects.raw('SELECT SUM(amount) as total, EXTRACT(QUARTER FROM date) as quarter FROM yourapp_expense GROUP BY quarter')
-            labels = ['Q1', 'Q2', 'Q3', 'Q4']
-            data = [0] * 4  # Initialize data array for 4 quarters
+@user_passes_test(lambda u: u.is_superuser)
+def Users(request):
+    form = UsersForm()
+    data = User.objects.all()
+    return render(request, 'users.html', {'form': form, 'data': data})
 
-            # Populate the data array with quarterly expenses
-            for expense in expenses:
-                data[expense.quarter - 1] = expense.total
-
-            return JsonResponse({'labels': labels, 'data': data})
-
-    return render(request, 'UsersDashboard/user_expenseanalysis.html')
-
-
-
-
+@login_required       
 def ViewProfile(request):
     user = request.user
     return render(request, 'UsersDashboard/user_profile.html', {'user': user})
 
-
-
-###############################################################################################################################################
 
 #ADMINS PORTAL 
 
@@ -261,7 +291,6 @@ def Delete_record(request,id):
     a=User.objects.get(pk=id)
     a.delete()
     return redirect('users')
-
 
 
 #Editing users in admin portal
@@ -336,17 +365,17 @@ def ExpenseReport(request):
     page_obj = paginator.get_page(page_number)    
 
     # Calculate total expenses and other aggregate values
-    total_expenses = expenses.aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expenses = int(expenses.aggregate(Sum('amount'))['amount__sum'] or 0)
     num_entries = expenses.count()  # Total number of expense entries
     num_employees = expenses.values('user').distinct().count() 
-    expense_per_employee = total_expenses / num_employees if num_employees else 0
+    expense_per_employee = int(total_expenses / num_employees if num_employees else 0)
 
     # Current month expenses
     current_month = timezone.now().month
     current_year = timezone.now().year
     current_month_expenses = expenses.filter(date__month=current_month, date__year=current_year)
-    total_current_month_expenses = current_month_expenses.aggregate(Sum('amount'))['amount__sum'] or 0
-    average_current_month_expense = current_month_expenses.aggregate(Avg('amount'))['amount__avg'] or 0
+    total_current_month_expenses = int(current_month_expenses.aggregate(Sum('amount'))['amount__sum'] or 0)
+    average_current_month_expense =int(current_month_expenses.aggregate(Avg('amount'))['amount__avg'] or 0)
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         expenses_data = list(page_obj.object_list.values('user__username', 'expensename', 'location', 'amount', 'date'))
@@ -386,66 +415,110 @@ def ExpenseReport(request):
         'to_date': to_date,
     })
 
-logger = logging.getLogger(__name__)
 
 @login_required
 def ExpenseAnalysis(request):
-    if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        analysis_type = request.GET.get('analysis_type')
+    try:
+        if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            analysis_type = request.GET.get('analysis_type')
 
-        if analysis_type == 'monthly':
-            # Get monthly expenses grouped by month of the current year
-            current_year = datetime.now().year
-            expenses = (Expense.objects.filter(date__year=current_year)
-                        .values('date__month')
-                        .annotate(total=Sum('amount'))
-                        .order_by('date__month'))
+            if analysis_type == 'weekly':
+                # Get weekly expenses grouped by week of the current year
+                current_year = datetime.now().year
+                expenses = (NewExpense.objects.filter(date__year=current_year)
+                            .annotate(week_number=ExtractWeek('date'))
+                            .values('week_number')
+                            .annotate(total=Sum('amount'))
+                            .order_by('week_number'))
+
+                labels = [f'Week {i}' for i in range(1, 54)]  # Up to 53 weeks
+                data = [0] * 53  # Initialize data array for 53 weeks
+
+                for expense in expenses:
+                    week_index = expense['week_number'] - 1  # Convert to zero-based index
+                    data[week_index] = expense['total']
+
+                return JsonResponse({'labels': labels, 'data': data})
+
+            elif analysis_type == 'monthly':
+                # Get monthly expenses grouped by month of the current year
+                current_year = datetime.now().year
+                expenses = (NewExpense.objects.filter(date__year=current_year)
+                            .values('date__month')
+                            .annotate(total=Sum('amount'))
+                            .order_by('date__month'))
+
+                labels = [f'Month {i+1}' for i in range(12)]
+                data = [0] * 12  # Initialize data array for 12 months
+
+                for expense in expenses:
+                    month_index = expense['date__month'] - 1  # Convert to zero-based index
+                    data[month_index] = expense['total']
+
+                return JsonResponse({'labels': labels, 'data': data})
             
-            labels = [f'Month {i+1}' for i in range(12)]
-            data = [0] * 12  # Initialize data array for 12 months
-            
-            for expense in expenses:
-                month_index = expense['date__month'] - 1  # Convert to zero-based index
-                data[month_index] = expense['total']
+            elif analysis_type == 'daily':
+                today = datetime.now().date()
+                start_of_week = today - timedelta(days=today.weekday())
+                end_of_week = start_of_week + timedelta(days=6)
+        #getiing daily expense of week
+                expenses = (NewExpense.objects.filter(date__range=[start_of_week, end_of_week])
+                           .annotate(day=ExtractDay('date'))
+                            .values('date')
+                            .annotate(total=Sum('amount'))
+                            .order_by('date'))   
+                labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+                data = [0] * 7
 
-            return JsonResponse({'labels': labels, 'data': data})
+                for expense in expenses:
+                        day_index = expense['date'].weekday()
+                        data[day_index] = expense['total']
+                        
+                return JsonResponse({'labels': labels, 'data': data})
+       
 
-        elif analysis_type == 'yearly':
-            # Get yearly expenses grouped by year
-            expenses = (Expense.objects
-                        .values('date__year')
-                        .annotate(total=Sum('amount'))
-                        .order_by('date__year'))
-            
-            labels = []
-            data = []
-            
-            for expense in expenses:
-                labels.append(str(expense['date__year']))
-                data.append(expense['total'])
 
-            return JsonResponse({'labels': labels, 'data': data})
+            elif analysis_type == 'quarterly':
+                current_year = datetime.now().year
+         # Quarterly analysis: Get expenses grouped by quarter of the current year
+                expenses = (NewExpense.objects.filter(date__year=current_year)
+                            .annotate(quarter=ExtractQuarter('date'))
+                            .values('quarter')
+                            .annotate(total=Sum('amount'))
+                            .order_by('quarter'))
 
-        elif analysis_type == 'quarterly':
-            # Get quarterly expenses grouped by quarter of the current year
-            current_year = datetime.now().year
-            expenses = (Expense.objects.filter(date__year=current_year)
-                        .annotate(quarter=((ExtractMonth('date') - 1) // 3 + 1))
-                        .values('quarter')
-                        .annotate(total=Sum('amount'))
-                        .order_by('quarter'))
-            
-            labels = ['Q1', 'Q2', 'Q3', 'Q4']
-            data = [0] * 4  # Initialize data array for 4 quarters
+                labels = [f'Q{i+1}' for i in range(4)]  # Quarterly labels
+                data = [0] * 4  # Initialize data array for 4 quarters
 
-            for expense in expenses:
-                quarter_index = expense['quarter'] - 1  # Convert to zero-based index
-                data[quarter_index] = expense['total']
+                for expense in expenses:
+                    quarter_index = expense['quarter'] - 1  # Convert to zero-based index
+                    data[quarter_index] = expense['total']
 
-            return JsonResponse({'labels': labels, 'data': data})
+                return JsonResponse({'labels': labels, 'data': data})
 
-    # Default response to render the HTML template for non-AJAX GET requests
-    return render(request, 'expenseanalysis.html')
+
+            elif analysis_type == 'yearly':
+                # Get yearly expenses grouped by year
+                expenses = (NewExpense.objects
+                            .values('date__year')
+                            .annotate(total=Sum('amount'))
+                            .order_by('date__year'))
+
+                labels = []
+                data = []
+
+                for expense in expenses:
+                    labels.append(str(expense['date__year']))
+                    data.append(expense['total'])
+
+                return JsonResponse({'labels': labels, 'data': data})
+
+        # Default response to render the HTML template for non-AJAX GET requests
+        return render(request, 'expenseanalysis.html')
+
+    except Exception as e:
+        print("Error in ExpenseAnalysis:", e)  # Log the error to the console
+        return JsonResponse({'error': str(e)}, status=500)
 
 #logout logic
 def LogoutPage(request):
